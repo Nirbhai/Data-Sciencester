@@ -12,6 +12,15 @@ Author	: Nirbhai Singh
 E-Mail	: chittamor@gmail.com
 
 
+*********************************
+
+Run the below commands to verify you are on correct environment and branch:
+    !conda info -e
+    !git branch -a
+
+*********************************
+
+
 """
 
 from collections import Counter, defaultdict
