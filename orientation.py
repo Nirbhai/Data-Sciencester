@@ -47,9 +47,13 @@ easier_to_read_list_of_lists = [[1,2,3],
         and
     from module import *
     mean the same?
+    
+    ANSWER --
+    --------------
+    
 """
 
-# Pythonic way is to just import the particular function
+# Pythonic way is to just import the particular values
 # you need from a module instead of importing all 
 # the contents of a module into your namespace
 
@@ -710,13 +714,327 @@ increasing_pairs = [(x,y)
 print(increasing_pairs)
 
 
+# assert False == True, "truthy no equals falsy"
+assert True == 1, "truthiness in python is not to be taken lightly"
+
+# one good debug practice is to assert function return values 
+# to see if nothing is lost in calling and returning
+
+def min_value(x):
+    return min(x)
+
+assert min_value([-1,-2,0,.9]) == -2, "min_value function misbehave"
+
+# Another less common use is to assert things about inputs to functions
+def smallest_item(x):
+    assert x, "empty list has no smallest item"
+    return min(x)
+
+class CountingCLicker:
+    """
+        Here we’ll construct a class representing a “counting clicker,” 
+        the sort that is used at the door to track how many people 
+        have shown up for the “Data science in Bir” meetup.
+        
+        It maintains a count, 
+        can be clicked to increment the count, 
+        allows you to read_count, 
+        and can be reset back to zero.
+        
+        To define a class, you use the keyword class and a PascalCase name.
+        
+        A class contains zero or more member functions. 
+        By convention, each takes a first parameter, self, 
+        that refers to the particular class instance.
+        
+        Normally, a class has a constructor, named __init__.
+        It takes whatever parameters you need 
+        to construct an instance of your class 
+        and does whatever setup you need
+    """
+    def __init__(self, count = 0):
+        self.count = count
+    
+    """
+        Notice that the __init__ method name 
+        starts and ends with double underscores. T
+        hese “magic” methods are sometimes called “dunder” methods 
+        (double-UNDERscore, get it?) and represent “special” behaviors.
+        
+        Class methods whose names start with an underscore 
+        are—by convention—considered “private,” 
+        and users of the class are not supposed to directly call them. 
+        However, Python will not stop users from calling them.
+        
+        Another such method is __repr__, 
+        which produces the string representation of a class instance.
+    """
+    
+    def __repr__(self):
+        return f"CountingClicker(count={self.count})"
+    
+    # public APIs of our class
+    
+    def click(self, num_times = 1):
+        """ Click the clicker some number of times."""
+        self.count += num_times
+    
+    def read(self):
+        return self.count
+    
+    def reset(self):
+        self.count = 0
 
 
+# Although the constructor has a funny name, 
+# we construct instances of the clicker using just the class name
 
+clicker1 = CountingCLicker()                # initilaized to 0
+clicker2 = CountingCLicker(100)             # initialized to 100
+clicker3 = CountingCLicker(count = 100)   # explicit way of doing the same
 
+assert clicker1.read() == 0, "clicker should start with count=0, but it isn't so"
+assert clicker2.read() == clicker3.read(), "both clickers have been initialized to 100"
 
+clicker1.click()
+clicker1.click()
+clicker1.click()
 
+assert clicker1.read() == 3, "after 3 clicks, clicker count should be 3"
 
+clicker1.click(10)
+
+assert clicker1.read() == 13, "after 13 clicks, clicker count should be 3"
+
+clicker1.reset()
+
+assert clicker1.read() == 0, "after reset, clicker count should be 0"
+
+"""
+    We can create subclasses that inherit 
+    some of their functionality from a parent class. 
+    For example, we could create a non-reset-able clicker
+    by using CountingClicker as the base class 
+    and overriding the reset method to do nothing:
+"""
+
+# a subclass inherits all the behavior of its parent class
+class NoResetClicker(CountingCLicker):
+    # this class has all the methods of CountingCLicker
+    # except that it has a reset method that does nothing
+    
+    def reset(self):
+        pass
+    
+    """
+        Question -- ??
+        --------------
+            Are "pass" and "continue" same?
+            If not, what is the difference?
+
+        ANSWER --
+        --------------
+    """
+
+clicker4 = NoResetClicker()
+assert clicker4.read() == 0
+clicker4.click()
+assert clicker4.read() == 1
+clicker4.reset()
+assert clicker4.read() == 1, "reset shouldn't do anything"
+
+"""
+    One nice thing about a list is that you can retrieve 
+    specific elements by their indices. 
+    But you don’t always need this! 
+    A list of a billion numbers takes up a lot of memory. 
+    If you only want the elements one at a time, t
+    here’s no good reason to keep them all around. 
+    If you only end up needing the first several elements, g
+    enerating the entire billion is hugely wasteful.
+    Often all we need is to iterate over the collection using "for" and "in". 
+    In this case we can create generators, 
+    which can be iterated over just like lists 
+    but generate their values lazily on demand.
+    
+    One way to create generators is with functions and the yield operator
+"""
+
+def generate_range(n):
+    i = 0
+    while i < n:
+        yield i
+        i += 1
+
+for i in generate_range(5):
+    print(f"i: {i}")
+
+# in fact, "range" is itself lazy
+
+# we can even generate an infinite sequence with a generator 
+# without running into memory issues.
+# Be very careful while using such a generator.
+
+def natural_numbers():
+    """returns natural numbers, 1, 2, 3..
+        one at a time.
+        Be very careful while calling this function.
+        Always call with a "break" logic in place.
+    """
+    i = 1
+    while True:
+        yield i
+        i += 1
+
+"""
+    The flip side of laziness is that 
+    you can only iterate through a generator once. 
+    If you need to iterate through something multiple times, 
+    you’ll need to either re-create the generator each time or use a list. 
+    If generating the values is expensive, 
+    that might be a good reason to use a list instead.
+"""
+
+# A second way to create generators 
+# is by using "for" comprehensions wrapped in parentheses
+evens_below_10 = (i for i in generate_range(10) if i % 2 == 0)
+# Such a “generator comprehension” doesn’t do any work 
+# until you iterate over it (using "for" or "next"). 
+# We can use this to build up elaborate data- processing pipelines.
+
+# None of the below computations *does* anything
+# until we iterate over them
+data = natural_numbers()
+evens = (i for i in data if i % 2 == 0)
+evens_squared = (i*i for i in evens)
+evens_squared_ending_6 = (i for i in evens_squared if i % 10 == 6)
+
+print(data)
+print(evens_squared_ending_6)
+
+"""
+    Not infrequently, when we’re iterating over a list or a generator 
+    we’ll want not just the values but also their indices. 
+    For this common case Python provides an "enumerate" function, 
+    which turns values into pairs - (index, value)
+"""
+
+names = ["Randeep", "Gurdas", "Jasmeet"]
+
+# non-pythonic way
+for i in range(len(names)):
+    print(f"name {i} is {names[i]}")
+
+# also non-pythonic way of doing same
+_ = 0
+for name in names:
+    print(f"name {_} is {names[_]}")
+    _ += 1
+
+# pythonic way of doing same
+for i, name in enumerate(names):
+    print(f"name {i} is {names[i]}")
+
+# using "enumerate" with generators
+for i, j in enumerate(generate_range(5)):
+    print(f"{i}: {j}")
+
+import random as rand
+
+rand.seed(10)
+four_uniform_rands = [rand.random() for _ in range(4)]
+print(four_uniform_rands)
+
+"""
+    The "random" module actually produces pseudorandom 
+    (that is, deterministic) numbers based on an internal state 
+    that you can set with "random.seed" 
+    if you want to get reproducible results.
+"""
+
+rand.seed(10)
+random1 = rand.random()
+rand.seed(10)
+random2 = rand.random()
+
+assert random1 == random2
+
+print(rand.randrange(10))
+
+print(rand.randrange(1,7))
+
+upto_ten = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+rand.shuffle(upto_ten)
+print(upto_ten)
+
+# pick one random choice from a list
+print(rand.choice(upto_ten))
+
+# pick a random sample (without duplicates) of size specified by you from a population
+lottery_numbers = range(10)
+winning_numbers = rand.sample(lottery_numbers, 3)
+print(winning_numbers)
+
+import re
+
+re_examples = [
+    not re.match("a", "cat"),
+    re.search("a", "cat"),
+    not re.search("c", "dog"),
+    3 == len(re.split("[ab]", "carbs")),
+    "R2D2" == re.sub("-", "2", "R-D-")
+    ]
+
+assert all(re_examples)
+
+"""
+    One important thing to note is that re.match 
+    checks whether the beginning of a string matches a regular expression, 
+    while re.search checks whether any part of a string matches a regular expression.
+    At some point you will mix these two up and it will cause you grief.
+"""
+
+# The zip function transforms multiple iterables 
+# into a single iterable of tuples
+
+l1 = ["a", "b", "c"]
+l2 = [1, 2, 3]
+
+#zip is lazy, so we have to do something like this 
+l3 = [pair for pair in zip(l1,l2)]
+print(l3)
+
+# If the lists are different lengths, zip stops as soon as one list ends.
+l4 = [pair for pair in zip(l1, [1, 2, 3, 4])]
+print(l4)
+
+l5 = [pair for pair in zip([1, 2, 3, 4], l1)]
+print(l5)
+
+# unpacking the ziped pairs or anything
+letters, numbers = zip(*l3)
+print(letters, numbers)
+print(letters)
+print(numbers)
+
+"""
+    The asterisk (*) performs argument unpacking, 
+    which uses the elements of pairs as individual arguments to zip. 
+    It ends up the same as if you’d called:
+        letters, numbners = zip(("a", 1),("b", 2),("c", 3))
+"""
+
+# You can use argument unpacking with any function
+def adds(a, b): return a + b
+assert adds(1, 2) == 3
+
+try:
+    adds([1, 2])
+except TypeError:
+    print("adds expects two inputs")
+
+# neat trick
+assert adds(*[1, 2]) == 3
 
 
 
