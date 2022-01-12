@@ -132,7 +132,7 @@ not_tab_string = r"\t"
 assert len(not_tab_string) == 2
 
 # Multiline strings using three double quotes
-multi_line_string = """ first line
+multi_line_string = """first line
 2nd line
 3rd line"""
 
@@ -323,15 +323,391 @@ x, y = y, x
 assert x == 4
 assert y == 3
 
+empty_dict1 = {}      # pythonic way
+empty_dict2 = dict()  # also works, but not pythonic
+
+grades = {"Randeep": 80, "Jasmeet": 95}
+
+Randeep_grade = grades["Randeep"]
+assert Randeep_grade == 80
 
 
+try:
+    Gurdas_grade = grades["Gurdas"]
+except KeyError:
+    print("no grade for Gurdas.")
+
+# in method for dictionaries is very fast, as compared to lists
+Randeep_has_grade = "Randeep" in grades
+Gurdas_has_grade = "Gurdas" in grades
+
+assert Randeep_has_grade == True
+assert Gurdas_has_grade == False
+
+"""
+    Dictionaries have a get method that returns a default value 
+    (instead of raising an exception) when you look up a key 
+    that’s not in the dictionary
+"""
+
+Randeep_grade = grades.get("Randeep", 0)
+Gurdas_grade = grades.get("Gurdas", 0)
+koi_v_grade = grades.get("koi v")    # default value to be returned is None
 
 
+assert Randeep_grade == 80
+assert Gurdas_grade == 0
+assert koi_v_grade == None
+
+grades["Jasmeet"] = 90    # replaces old value with new one
+grades["Gurdas"] = 88     # addes a new key value pair to the dict
+
+num_students = len(grades)
+assert num_students == 3
+
+# dictionaries can be used to represent structured data
+# though there are other better ways too
+tweet = {
+    "user" : "Randeep Singh",
+    "text" : "Data Science is Awesome",
+    "retweet_count" : 100,
+    "hashtags" : ["#data", "#science", "#datascience", "#awesome", "#yolo"]
+}
+
+tweet_keys = tweet.keys()           # iterable for keys
+tweet_values = tweet.values()       # iterable for values
+tweet_items = tweet.items()         # iterable for (key, value) tuples
+
+"""
+Question -- ??
+--------------
+    What are iterables?
+    how to iterate over them?
+    can you store them in a variable?
+    what type that variable will be?
+
+ANSWER --
+--------------
+
+"""
+
+"user" in tweet_keys                # works but non-pythonic
+"user" in tweet                     # pythonic way of checking for keys
+
+"Randeep Singh" in tweet_values     #slow but only way to check
+
+"""
+    Dictionary keys must be “hashable”; 
+    in particular, you cannot use lists as keys. 
+    If you need a multipart key, you should probably use a tuple 
+    or figure out a way to turn the key into a string.
+"""
 
 
+document = ["data", "science", "from", "scratch"]
+
+word_counts = {}
+for word in document:
+    if word in word_counts:
+        word_counts[word] += 1
+    else:
+        word_counts[word] = 1
+
+"""
+    You could also use the “forgiveness is better than permission” approach 
+    and just handle the exception from trying to look up a missing key
+"""
+
+word_counts = {}
+for word in document:
+    try:
+        word_counts[word] += 1
+    except KeyError:
+        word_counts[word] = 1
+
+# third approach is to use .get method
+# as it behaves gracefully for missing keys
+word_counts = {}
+for word in document:
+    previous_count = word_counts.get(word, 0)
+    word_counts[word] = previous_count + 1
+
+"""
+    A defaultdict is like a regular dictionary, 
+    except that when you try to look up a key it doesn’t contain, 
+    it first adds a value for it 
+    using a zero-argument function you provided when you created it. 
+    In order to use defaultdicts, you have to import them from collections
+"""
+
+word_counts = defaultdict(int)      # int produces 0
+for word in document:
+    word_counts[word] += 1
+
+# some more examples of using defaultdict
+
+grades_dd_list = defaultdict(list)  # list produces an empty list
+grades_dd_list["Randeep"].append(80)
+
+assert grades_dd_list["Randeep"] == [80]
+assert grades_dd_list["Randeep"][0] == 80
+
+grades_dd_dict = defaultdict(dict)  # dict produces an empty dict
+grades_dd_dict["Randeep"]["marks"] = 80
+grades_dd_dict["Randeep"]["grade"] = "B+"
+
+print(grades_dd_dict)
+print(grades_dd_dict["Randeep"].keys())
+assert  "marks" in grades_dd_dict["Randeep"].keys()
+assert "grade" in grades_dd_dict["Randeep"].keys()
+
+# you can also provide your won zero-argument functions as parameter to defaultdict
+grades_dd_pair = defaultdict(lambda: [0, 0])
+grades_dd_pair[1][1] = 3
+
+print(grades_dd_pair)
+assert grades_dd_pair[1][0] == 0
+assert grades_dd_pair[1][1] == 3
+
+name_city_state_dd = defaultdict(lambda: ["none", "none"])
+name_city_state_dd["Shiv Kumar Batalvi"][0] = "Batala"
+name_city_state_dd["Shiv Kumar Batalvi"][1] = "Punjab"
+
+print(name_city_state_dd)
+assert name_city_state_dd["Shiv Kumar Batalvi"] == ["Batala", "Punjab"]
+
+# A Counter turns a sequence of values 
+# into a defaultdict(int)-like object mapping keys to counts
+
+c = Counter([0,2,1,1])
+print(c)
+assert c[1] == 2
+
+# recall, document is a list of words
+word_counts = Counter(document)
+
+# Counter instance has a most_common method that is frequently useful
+document.extend(["science", "science", "science", "data"])
+word_counts = Counter(document)
+for word, count in word_counts.most_common(2):
+    print(word, count)
+    assert word in ("data", "science")
+    assert count in [2, 4]
+
+# set is a collection of distinct elements. 
+# A set can be defined by listing its elements between curly braces
+primes_below_10 = {2, 3, 5, 7}
+
+# as {} signifies an empty dictionary
+# we can't use it to define an empty set
+empty_set = set()
+s = set()
+
+s.add(1)
+s.add(2)
+s.add(2)
+
+assert len(s) == 2
+print (1 in s)
+assert (1 in s) == True
+assert (3 in s) == False
+
+"""
+    We’ll use sets for two main reasons. 
+    The first is that "in" is a very fast operation on sets. 
+    If we have a large collection of items 
+    that we want to use for a membership test, 
+    a set is more appropriate than a list
+"""
+
+hundreds_of_other_words = []
+
+stopwords_list = ["a", "an", "at"] + hundreds_of_other_words + ["yet", "you"]
+
+assert ("zip" in stopwords_list) == False
+     # False, but have to check every element
+
+stopwords_set = set(stopwords_list)
+assert ("zip" in stopwords_set) == False
+      # very fast to check
+
+# 2nd use case is to find distinct items in a collection
+item_list = [1, 2, 3, 1, 2, 3]
+number_of_items = len(item_list)
+item_set = set(item_list)
+number_of_distinct_items = len(item_set)
+distinct_item_list = list(item_set)
+
+assert number_of_items == 6
+assert number_of_distinct_items == 3
+assert distinct_item_list == [1,2,3]
+
+#ternary if-then-else one liner
+parity = "even" if x%2 == 0 else "odd"
+
+# range(x) goes from 0 to x-1
+for x in range(10):
+    print(f"{x} is less than 10")
+
+for x in range(10):
+    if x == 3:
+        continue
+    if x == 5:
+        break
+    print(x)
+
+one_is_less_than_two = 1 < 2
+assert one_is_less_than_two == True
+
+true_equals_false = True == False
+assert true_equals_false == False
+
+x = None
+assert x == None        # non-pythonic way to check for None
+assert x is None        # pythonic way to check for None
+
+"""
+    Python lets you use any value where it expects a Boolean. 
+    The following are all “falsy”:
+            False
+            None
+            []      (an empty list)
+            {}      (an empty dictionary)
+            set()   (an empty set)
+            ""
+            0
+            0.0
+    Pretty much anything else gets treated as "True". 
+    This allows you to easily use if statements to test for 
+    empty lists, empty strings, empty dictionaries, and so on. 
+    It also sometimes causes tricky bugs 
+    if you’re not expecting this behavior
+"""
+
+def some_function_that_returns_a_string():
+    return ""
+
+s = some_function_that_returns_a_string()
+if s:
+    first_char = s[0]
+else:
+    first_char = ""
+
+# A shorter (but possibly more confusing) way of doing the same is:
+first_char = s and s[0]
+# since "and" returns its second value when the first is “truthy,” 
+# and the first value when it’s not.
+
+# check if x is a number or possibly None
+x = "yo"
+safe_x = x or 0
+print(safe_x)
+
+safe_x = x if x is not None else 0
+print(safe_x)
+# but x was a string, not a number
+# so this is not a good check
+
+"""
+    Python has an "all" function, which takes an iterable 
+    and returns "True" precisely when every element is truthy, 
+    and an "any" function, which returns "true"
+    when at least one element is truthy
+"""
+
+all1 = all([True, 1, {3}])      # True, all are truthy
+all2 = all([True, 1 , {}])      # False, empty dict is falsy
+any1 = any([True, 1 , {}])      # True, True is truthy
+all3 = all([])                  # True, no falsy elements in the list
+any2 = any([])                  # False, no truthy elements in the list
+
+assert all1 is True
+assert all2 is False
+assert any1 is True
+assert all3 is True
+assert any2 is False
 
 
+x = [4, 1, 3, 2]
 
+y = sorted(x)
+    # sorted() method returns a sorted list, original unchanged
+    
+assert x == [4, 1, 3, 2]
+assert y == [1, 2, 3, 4]
+
+x.sort()
+    # .sort() method sorts "in-place"
+
+assert x == [1, 2, 3, 4]
+
+x = [-4, 1, 3, -2]
+
+# sort the list by absolute value from largest to smallest
+y = sorted(x, key=abs, reverse=True)
+
+assert y == [-4, 3, -2, 1]
+assert x == [-4, 1, 3, -2]
+
+x.sort(key=abs, reverse=True)
+
+assert x == [-4, 3, -2, 1]
+
+# instead of comparing the elements themselves, 
+# you can compare the results of a function that you specify with key
+# remember the word_counts
+# sort the words & counts from highest count to lowest
+wc = sorted(word_counts.items(),
+            key=lambda item: item[1] ,
+            reverse=True)
+print(wc)
+
+"""
+    Frequently, you’ll want to transform a list into another list 
+    by choosing only certain elements, 
+    or by transforming elements, or both. 
+    The Pythonic way to do this is with list comprehensions
+"""
+
+even_numbers = [x for x in range(7) if x%2 == 0]
+assert even_numbers == [0, 2, 4, 6]
+
+squares = [x*x for x in range(7)]
+assert squares == [0, 1, 4, 9, 16, 25, 36]
+
+even_squares = [x*x for x in even_numbers]
+assert even_squares == [0, 4, 16, 36]
+
+square_dict = {x: x*x for x in range(7)}
+assert square_dict[3] == 9
+print(square_dict)
+
+square_set = {x*x for x in (-1, 0, 1)}
+assert len(square_set) == 2
+print(square_set)
+
+zeros = [0 for _ in even_numbers]
+assert len(zeros) == len(even_numbers)
+
+pairs = [(x,y)
+         for x in (0,1,2)
+         for y in range(3)]
+print(pairs)
+
+"""
+Question -- ??
+--------------
+    What is the difference between lambda functions and list comprehensions?
+    Which one to use where?
+
+ANSWER --
+--------------
+
+"""
+increasing_pairs = [(x,y)
+                    for x in range(3)
+                    for y in range(x+1,3)]
+print(increasing_pairs)
 
 
 
