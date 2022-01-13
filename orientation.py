@@ -1036,15 +1036,240 @@ except TypeError:
 # neat trick
 assert adds(*[1, 2]) == 3
 
+def doubler(foo):
+    """
+    A higher order function that takes as input some function foo
+    and returns a new function that for any input 
+    returns twice the value of f
+    """
+    def goo(x):
+        return 2 * foo(x)
+    return goo
 
+def foo(x):
+    return x + 1
 
+assert doubler(foo)(1) == 4
+assert doubler(foo)(-1) == 0
 
+def foo1(x, y):
+    return x + y
 
+try:
+    doubler(foo1)(1, 2)
+except TypeError:
+    print("as per definition, goo only takes one argument")
 
+"""
+    What we need is a way to specify a function that takes arbitrary arguments.
+    We can do this with argument unpacking and a little bit of magic.
+"""
 
+def magic(*args, **kwargs):
+    # arbitrary arguments function
+    print("unnamed args: ", args)
+    print("named args: ", kwargs)
 
+magic(1, 2, key = "word", key2 = "word2")
 
+"""
+    When we define a function like this, 
+    args is a tuple of its unnamed arguments 
+    and kwargs is a dictionary of its named arguments.
+    
+    It works the other way too, 
+    if you want to use a list (or tuple ) and dictionary
+    to supply arguments to a function
+"""
 
+def other_way_magic(x, y, z):
+    return x + y + z
+
+x_y_list = [1, 2]
+z_dict = {"z": 3}
+
+assert other_way_magic(*x_y_list, **z_dict) == 6
+
+def magical_doubler(foo):
+    # works no matter what kind of inputs foo expects
+    def goo(*args, **kwargs):
+        # whatever arguments goo is supplied, pass them to foo
+        return 2 * foo(*args, **kwargs)
+    return goo
+
+assert magical_doubler(foo1)(1, 2) == 6
+
+"""
+    You could do all sorts of strange tricks with this; 
+    but most judicious use is it to produce higher-order functions 
+    whose inputs can accept arbitrary arguments.
+    
+    As a general rule, 
+    your code will be more correct and more readable 
+    if you are explicit about what sorts of arguments your functions require.
+    Hence, we will use args and kwargs only when we have no other option.
+"""
+
+"""
+    Python is a dynamically typed language. 
+    That means that it in general doesn’t care 
+    about the types of objects we use, 
+    as long as we use them in valid ways.
+"""
+
+def adder(x, y):
+    return x + y
+
+assert adder(1, 2) == 3
+assert adder([1], [2, 3]) == [1, 2, 3]
+assert adder("x", "y") == "xy"
+
+try:
+    adder(2, "x")
+except TypeError:
+    print("can not add int to a string")
+
+# whereas in a statically typed language 
+# our functions and objects would have specific types
+
+def adder(x: int, y: int) -> int:
+    return x + y
+
+adder(1, 2)       # if we want this to be ok 
+adder("x", "y")   # and if we don't want this to be ok
+
+"""
+    The preceding version of adder with the type annotations is valid Python 3.6!
+    However, these type annotations don’t actually do anything. 
+    You can still use the annotated function to add 
+        ints,
+        strings,
+        lists,
+    and the call to adder(2, "x") will still raise the exact same TypeError.
+    
+    That said, there are still (at least) four good reasons 
+    to use type annotations in your Python code:
+        1. Types are an important form of documentation.
+        
+            Compare the following two function stubs:
+                """
+def dot_product(x, y): ...
+def dot_product(x: float, y: float) -> float: ...
+"""
+            The second one is exceedingly more informative.
+        
+        2. There are external tools (the most popular is mypy) 
+        that will read your code, inspect the type annotations, 
+        and let you know about type errors before you ever run your code. 
+        
+        For example, if you ran mypy over a file containing adder(2, "x"), 
+        it would warn you:
+            error: Argument 1 to "adder" has incompatible type "str",
+                   expected "int"
+        Like assert testing, this is a good way to find mistakes in your code.
+        
+        3. Having to think about the types in your code 
+        forces you to design cleaner functions and interfaces.
+        """
+from typing import Union
+def secretly_ugly_foo(value, operation): ...
+def ugly_foo(value: int,
+             operation: Union[str, float, int, bool]) -> int: ...
+"""
+        Here we have a function whose operation parameter is allowed to be 
+            a string, or 
+            an int, or 
+            a float, or 
+            a bool. 
+        It is highly likely that this function is fragile and difficult to use, 
+        but it becomes far more clear when the types are made explicit. 
+        Doing so, then, will force us to design in a less clunky way, 
+        for which our users will thank us.
+        
+        4. Using types allows your editor 
+            to help you with things like autocomplete, and
+            to get angry at type errors.
+        It can be argued that type hints may be valuable on large projects 
+        but are not worth the time for small ones. 
+        However, since type hints take almost no additional time to type 
+        and allow your editor to save you time, 
+        Typing them actually allow you to write code more quickly, 
+        even for small projects.
+        
+"""
+
+def totaler(xs: list) -> float:
+    return sum(xs)
+
+# This isn’t wrong, but the type is not specific enough. 
+# It’s clear we really want xs to be a list of floats, not (say) a list of strings.
+
+# The module provides a number of parameterized types 
+# that we can use to do just this.
+
+from typing import List       # note the capital L
+
+def totaler(xs: List[float]) -> float:
+    return sum(xs)
+
+# Up until now we’ve only specified annotations 
+# for function parameters and return types. 
+# For variables themselves it’s usually obvious what the type is
+
+x: int = 5
+# this is how it is done, but it's obvious, so no need
+
+# However, sometimes it's not so obvious
+values = []             # what's the type here
+best_so_far = None      # what's the type here
+
+# In such cases we will supply inline type hints
+values: List[int] = []
+from typing import Optional
+best_so_far: Optional[float] = None
+    # allowed to be either a float or none
+
+# the type annotations in this snippet are all unnecessary
+###-------------------------------------------------------
+from typing import Dict, Iterable, Tuple
+
+# keys are strings, values are ints
+counts: Dict[str, int] = {'data': 1, 'science': 2}
+
+# lists and generators are both iterable
+if "lazy":
+    evens: Iterable[int] = (x for x in range(10) if x % 2 == 0)
+else:
+    evens: Iterable[int] = [0, 2, 4, 6, 8]
+
+# tuples specify a type for each element
+triple: Tuple[int, float, int] = (10, 2.3, 5)
+###-------------------------------------------------------
+
+# since Python has first-class functions, 
+# we need a type to represent those as well.
+
+from typing import Callable
+
+# The type hint says that repeater is a function that takes
+# two arguments, a string and an int, and returns a string.
+def twice(repeater: Callable[[str, int], str], s: str) -> str:
+    return repeater(s, 2)
+
+def comma_repeater(s: str, n: int) -> str:
+    n_copies = [s for _ in range(n)]
+    return ', '.join(n_copies)
+
+assert twice(comma_repeater, "type hints") == "type hints, type hints"
+
+# As type annotations are just Python objects, 
+# we can assign them to variables to make them easier to refer to
+
+Number = int
+Numbers = List[Number]
+
+def total(xs: Numbers) -> Number:
+    return sum(xs)
 
 
 
