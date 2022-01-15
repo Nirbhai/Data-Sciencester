@@ -109,7 +109,11 @@ def dot(v: Vector, w: Vector) -> float:
 assert dot([1, 1, 1], [2, 2, 2]) == 6
 assert dot([1, 1, 1], [1, 1, 1]) == 3
 assert dot([1, 1], [0, 0]) == 0
+
+def sum_of_squares(v: Vector) -> float:
     
+
+
 
 
 
