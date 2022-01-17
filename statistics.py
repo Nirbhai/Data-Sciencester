@@ -8,6 +8,12 @@ We imbue them with meaning.
     Nate Silver, The Signal and the Noise
 
 
+Data exploration = Statistics
+and Data exploration is the first or second thing 
+that you should always do 
+when you get a dataset.
+    - me
+
 Author	: Nirbhai Singh
 E-Mail	: chittamor@gmail.com
 
