@@ -393,8 +393,17 @@ y = [99.98, 99.99, 100, 100.01, 100.02]
 print(correlation(x, y))
 
 
-
-
+"""
+    Some important statistics libraries:
+            1. SciPy            ( https://scipy.org/ )
+            2. Pandas           ( https://pandas.pydata.org/ )
+            3. StatsModels      ( https://www.statsmodels.org/stable/index.html )
+    
+    3 books online statistics books suggested by Joel Grus:
+        1. https://open.umn.edu/opentextbooks/textbooks/introductory-statistics
+        2. https://onlinestatbook.com/
+        3. https://openstax.org/details/introductory-statistics
+"""
 
 
 
