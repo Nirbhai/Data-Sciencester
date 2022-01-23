@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 
-
+Learn how to scrap data from indian government websites for 
+policy analysis and other information extraction,
+civilian data scientist.
 
 
 Author	: Nirbhai Singh
