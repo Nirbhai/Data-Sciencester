@@ -104,7 +104,7 @@ soup = BeautifulSoup(html, 'html5lib')
 
 
 first_para = soup.find('p')
-print(first_para)
+# print(first_para)
 # returns <p id="p1">This is the first paragraph.</p>
 # full p tag with all its contents
 
@@ -142,24 +142,168 @@ spans_inside_divs = [span
                      for div in soup('div')   # for each <div> on the page
                      for span in div('span')] # find each <span> inside it
 
-
-
-
-### Congress talking about lockdowns
-
-url = "https://www.house.gov/representatives"
-html = requests.get(url).text
-soup = BeautifulSoup(html, 'html5lib')
-
-all_urls = [ a['href']
-            for a in soup('a')
-            if a.has_attr('href')]
-print( len(all_urls) )
+def paragraph_mentions(text: str,
+                       keyword: str) -> bool:
+    """Returns True if a <p> inside the text mentions keyword"""
+    
+    soup = BeautifulSoup(text, 'html5lib')
+    paragraphs = [p.get_text() for p in soup('p')]
+    return any(keyword.lower() in para.lower()
+               for para in paragraphs)
 
 
 
 
 
+def congress():
+    from bs4 import BeautifulSoup
+    import requests
+    
+    ### Congress talking about lockdowns
+    
+    url = "https://www.house.gov/representatives"
+    html = requests.get(url).text
+    soup = BeautifulSoup(html, 'html5lib')
+
+    all_urls = [ a['href']
+                for a in soup('a')
+                if a.has_attr('href')]
+    print( len(all_urls) )
+    
+    import re
+    # must start with http:// or https://
+    # must end with .house.gov or .house.gov/
+    regex = r"^https?://.*\.house.gov/?$"
+    
+    # some testing for this regex
+    assert re.match(regex, "http://joel.house.gov")
+    assert re.match(regex, "https://joel.house.gov")
+    assert re.match(regex, "http://joel.house.gov/")
+    assert re.match(regex, "https://joel.house.gov/")
+    assert not re.match(regex, "joel.house.gov")
+    assert not re.match(regex, "joel.house.gov/")
+    assert not re.match(regex, "joel.house.com")
+    
+    good_urls = [ url for url in all_urls if re.match(regex, url)]
+    
+    print( len(good_urls))
+    
+    good_urls = list(set(good_urls))
+    print( len(good_urls))
+    
+    from typing import Dict, Set
+    
+    press_releases: Dict[str, Set[str]] = {}
+    print("fetching press releases")
+    for i, house_url in enumerate(good_urls):
+        html = requests.get(house_url).text
+        soup = BeautifulSoup(html, 'html5lib')
+        pr_links = {a['href'] 
+                    for a in soup('a') 
+                    if 'press releases' in a.text.lower()}
+        press_releases[house_url] = pr_links
+        print(f"{i}. {house_url}: {pr_links}")
+    print("press releases fetched")
+    text = "<body><h1>Facebook</h1><p>Twitter</p>"
+    assert not paragraph_mentions(text, "Facebook")
+    assert paragraph_mentions(text, "Twitter")
+    
+    for house_url, pr_links in press_releases.items(): 
+        for pr_link in pr_links:
+            url = f"{house_url}/{pr_link}"
+            text = requests.get(url).text
+            if paragraph_mentions(text, 'data'): 
+                print(f"{house_url}")
+                break # done with this house_url
+
+def github_api_access():
+    import requests, json 
+    github_user = "Nirbhai"
+    endpoint = f"https://api.github.com/users/{github_user}/repos"
+    repos = json.loads(requests.get(endpoint).text)
+    from collections import Counter 
+    from dateutil.parser import parse
+    dates = [parse(repo["created_at"]) for repo in repos]
+    month_counts = Counter(date.month for date in dates) 
+    weekday_counts = Counter(date.weekday() for date in dates)
+    print(month_counts, weekday_counts)
+
+def main():
+    CONSUMER_KEY = "XsgVCpQcUGXkCRJggee7WBWZ1"
+    CONSUMER_SECRET = "48ejl7yQUG7Qp6XO0mPWNa0elqEZyV3k1qdEZxdlSRbpBtBMba"
+    
+    import webbrowser
+    from twython import Twython
+    
+    # temporary client to retrieve an authentication URL
+    temp_client = Twython(CONSUMER_KEY, CONSUMER_SECRET)
+    temp_creds = temp_client.get_authentication_tokens()
+    url = temp_creds['auth_url']
+    
+    # Now visit that URL to authorize the application and get a PIN
+    print(f"go visit {url} and get the PIN code and paste it below") 
+    webbrowser.open(url)
+    PIN_CODE = input("please enter the PIN code: ")
+    
+    # Now we use that PIN_CODE to get the actual tokens
+    auth_client = Twython(CONSUMER_KEY,
+                          CONSUMER_SECRET,
+                          temp_creds['oauth_token'],
+                          temp_creds['oauth_token_secret'])
+    final_step = auth_client.get_authorized_tokens(PIN_CODE)
+    ACCESS_TOKEN = final_step['oauth_token']
+    ACCESS_TOKEN_SECRET = final_step['oauth_token_secret']
+    
+    # And get a new Twython instance using them.
+    twitter = Twython(CONSUMER_KEY,
+                  CONSUMER_SECRET,
+                  ACCESS_TOKEN,
+                  ACCESS_TOKEN_SECRET)
+    
+    # Search for tweets containing the phrase "data science"
+    for status in twitter.search(q='"data science"')["statuses"]: user = status["user"]["screen_name"]
+    text = status["text"]
+    print(f"{user}: {text}\n")
+    
+    from twython import TwythonStreamer
+    
+    # Appending data to a global variable is pretty poor form
+    # but it makes the example much simpler
+    tweets = []
+    
+    class MyStreamer(TwythonStreamer):
+        def on_success(self, data):
+            """
+            What do we do when twitter sends us data?
+            Here data will be a Python dict representing a tweet
+            """
+            # We only want to collect English-language tweets
+            if data.get('lang') == 'en':
+                tweets.append(data)
+                print(f"received tweet #{len(tweets)}")
+    
+            # Stop when we've collected enough
+            if len(tweets) >= 100:
+                self.disconnect()
+    
+        def on_error(self, status_code, data):
+            print(status_code, data)
+            self.disconnect()
+    
+    stream = MyStreamer(CONSUMER_KEY, CONSUMER_SECRET,
+                        ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+    
+    # starts consuming public statuses that contain the keyword 'data'
+    stream.statuses.filter(track='data')
+    
+    # if instead we wanted to start consuming a sample of *all* public statuses
+    # stream.statuses.sample()
+    
+    from collections import Counter
+    top_hashtags = Counter(hashtag['text'].lower() 
+                           for tweet in tweets
+                           for hashtag in tweet["entities"]["hashtags"])
+    print(top_hashtags.most_common(5))
 
 
 
@@ -190,3 +334,8 @@ print( len(all_urls) )
 
 
 
+
+
+
+
+if __name__ == "__main__": main()
