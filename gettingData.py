@@ -229,8 +229,8 @@ def github_api_access():
     print(month_counts, weekday_counts)
 
 def main():
-    CONSUMER_KEY = "XsgVCpQcUGXkCRJggee7WBWZ1"
-    CONSUMER_SECRET = "48ejl7yQUG7Qp6XO0mPWNa0elqEZyV3k1qdEZxdlSRbpBtBMba"
+    CONSUMER_KEY = "enter the key"
+    CONSUMER_SECRET = "enter the key"
     
     import webbrowser
     from twython import Twython
