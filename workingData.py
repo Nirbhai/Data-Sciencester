@@ -53,14 +53,26 @@ uniform = [200 * random.random() - 100 for _ in range(10000)]
 normal = [57 * inverse_normal_cdf(random.random())
           for _ in range(10000)]
 
-from statistics import mean
+from statss import mean
 
 print(f" mean of uniform data set: {mean(uniform)}")
 print(f" mean of normal data set: {mean(normal)}")
 
-from statistics import standard_deviation
+from statss import standard_deviation
+print(f" std dev of uniform data set: {standard_deviation(uniform)}")
+print(f" std dev of normal data set: {standard_deviation(normal)}")
 
-
+"""
+NOTE
+-----------------------------------------------------------------------
+Do not name your files same as any standard python lobrary names,
+such as statistics.py
+You will inadvertantly run into import errors,
+if you try to import your local module.
+In case you have to have to,
+import it as directoryName.filename - haven't checked but it shall work
+-----------------------------------------------------------------------
+"""
 
 
 
