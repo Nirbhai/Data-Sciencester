@@ -74,15 +74,79 @@ import it as directoryName.filename - haven't checked but it shall work
 -----------------------------------------------------------------------
 """
 
+plot_histogram(uniform, 10, "Uniform Histogram")
+
+plot_histogram(normal, 10, "Normal Histogram")
+
+import pandas as pd
+import plotly.express as px
+
+# below three lines helps choose where to render the plotly plots
+# it needs plotly dependency kaleido installed for in-IDE rendering as svg
+import plotly.io as pio
+pio.renderers.default = 'svg'
+#pio.renderers.default = 'browser'
+
+df = pd.DataFrame(uniform)
+fig = px.histogram(df, x=df[0], title="plotly Uniform Histogram")
+fig.show()
+print(df.describe())
+
+df = pd.DataFrame(normal)
+fig = px.histogram(df, x=df[0], title="plotly Normal Histogram")
+fig.show()
+print(df.describe())
+
+def random_normal() -> float:
+    """returns a random draw from a standard normal distribution"""
+    return inverse_normal_cdf(random.random())
+
+xs = [random_normal() for _ in range(1000)]
+ys1 = [ x + random_normal() / 2 for x in xs ]
+ys2 = [ -x + random_normal() / 2 for x in xs ]
+
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+df1 = pd.DataFrame(ys1)
+df2 = pd.DataFrame(ys2)
+
+# plotting individual graphs
+
+fig1 = px.histogram(df1, x = df1[0], title="Normal Distribution 1")
+fig1.show()
+
+fig2 = px.histogram(df2, x = df2[0], title="Normal Distribution 2")
+fig2.show()
+
+# plotting both graphs side by side
+fig = make_subplots(
+    rows = 1,
+    cols = 2,
+    subplot_titles = ("Distribution of ys1", "Distribution of ys2")
+    )
 
 
+for d in fig1.data:
+    fig.add_trace(
+        (
+            go.Histogram( x = d['x'], y = d['y'], name = "ys1" )
+        ),
+        row = 1,
+        col = 1
+        )
 
+for d in fig2.data:
+    fig.add_trace(
+        (
+            go.Histogram( x = d['x'], y = d['y'], name = "ys2" )
+        ),
+        row = 1,
+        col = 2
+        )
 
-
-
-
-
-
+fig.update_layout(height=600, width=1200, title_text="Both datasets are normally distributed")
+fig.show()          # both look similar
 
 
 
