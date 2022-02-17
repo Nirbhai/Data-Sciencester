@@ -130,7 +130,7 @@ fig = make_subplots(
 for d in fig1.data:
     fig.add_trace(
         (
-            go.Histogram( x = d['x'], y = d['y'], name = "ys1" )
+            go.Histogram( x = df1[0], name = "ys1" )
         ),
         row = 1,
         col = 1
@@ -139,13 +139,18 @@ for d in fig1.data:
 for d in fig2.data:
     fig.add_trace(
         (
-            go.Histogram( x = d['x'], y = d['y'], name = "ys2" )
+            go.Histogram( x = df2[0], name = "ys2" )
         ),
         row = 1,
         col = 2
         )
 
-fig.update_layout(height=600, width=1200, title_text="Both datasets are normally distributed")
+fig.update_layout(
+                    height=600,
+                    width=1200,
+                    title_text="Both datasets are normally distributed",
+                    legend_orientation = "h"
+                )
 fig.show()          # both look similar
 
 
