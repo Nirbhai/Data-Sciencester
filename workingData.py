@@ -127,23 +127,23 @@ fig = make_subplots(
     )
 
 
-for d in fig1.data:
-    fig.add_trace(
-        (
-            go.Histogram( x = df1[0], name = "ys1" )
-        ),
-        row = 1,
-        col = 1
-        )
 
-for d in fig2.data:
-    fig.add_trace(
-        (
-            go.Histogram( x = df2[0], name = "ys2" )
-        ),
-        row = 1,
-        col = 2
-        )
+fig.add_trace(
+    (
+        go.Histogram( x = df1[0], name = "ys1" )
+    ),
+    row = 1,
+    col = 1
+    )
+
+
+fig.add_trace(
+    (
+        go.Histogram( x = df2[0], name = "ys2" )
+    ),
+    row = 1,
+    col = 2
+    )
 
 fig.update_layout(
                     height=600,
@@ -151,7 +151,55 @@ fig.update_layout(
                     title_text="Both datasets are normally distributed",
                     legend_orientation = "h"
                 )
-fig.show()          # both look similar
+fig.show()
+# both look similar 
+# lets see their joint distribution with xs
+
+plt.figure()
+plt.scatter(
+        xs, ys1,
+        marker = '.',
+        color = 'black',
+        label = 'ys1'
+    )
+
+plt.scatter(
+        xs, ys2,
+        marker = '.',
+        color = 'red',
+        label = 'ys2'
+    )
+
+plt.xlabel("xs")
+plt.ylabel("ys")
+plt.legend(loc = 9)
+plt.title("Very different joint distributions")
+plt.show()
+
+fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+fig.add_trace(go.Scatter(x = xs, y = ys1, 
+                         mode = "markers", name = "ys1")
+              )
+fig.add_trace(go.Scatter(x = xs, y = ys2, 
+                         mode = "markers", name = "ys2"),
+              secondary_y=True)
+fig.update_layout(
+                    title_text="Very different joint distributions",
+                    legend_orientation = "h"
+                )
+fig.show()
+
+# if plotly is used with dataframes of pandas
+# it automatically adds x and y label from dataframe columns
+# and probably other auto-things as well
+# plotly is very well suited for working with pandas dataframes
+
+from statss import correlation
+
+print(correlation(xs, ys1))
+print(correlation(xs, ys2))
+
 
 
 
