@@ -200,6 +200,18 @@ from statss import correlation
 print(correlation(xs, ys1))
 print(correlation(xs, ys2))
 
+from linearAlgebra import Matrix, Vector, make_matrix
+
+def correlation_matrix(data: List[Vector]) -> Matrix:
+    """
+    Returns the len(data) x len(data) matrix whose (i, j)-th entry
+    is the correlation between data[i] and data[j]
+    """
+    def correlation_ij(i: int, j: int) -> float:
+        return correlation(data[i], data[j])
+    
+    return make_matrix(len(data), len(data), correlation_ij)
+
 
 
 
